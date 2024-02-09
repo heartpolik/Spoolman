@@ -258,6 +258,37 @@ class Spool(BaseModel):
             extra={field.key: field.value for field in item.extra},
         )
 
+class Coil(BaseModel):
+    id: int = Field(description="Unique internal id of this coil type.")
+    registered: datetime = Field(description="When coil was registered in database. UTC Timezone.")
+    name: Optional[str] = Field(
+        max_length=64,
+        description="Coil size, to distinguish this coil among others from same vendor.",
+        example="Monofilament 3kg(big) coil",
+    )
+    vendor: Vendor = Field(description="The vendor of this coil type.")
+    weight: float = Field(
+        gt=0,
+        description="The weight of the empty coil in grams.",
+        example=300,
+    )
+    comment: Optional[str] = Field(
+        max_length=1024,
+        description="Free text comment about this coil.",
+        example="",
+    )
+
+    @staticmethod
+    def from_db(item: models.Coil) -> "Coil":
+        """Create a new Pydantic coil object from a database coil object."""
+        return Coil(
+            id=item.id,
+            registered=item.registered,
+            name=item.name,
+            vendor=Vendor.from_db(item.vendor) if item.vendor is not None else None,
+            weight=item.weight,
+            comment=item.comment,
+        )
 
 class Info(BaseModel):
     version: str = Field(example="0.7.0")
@@ -312,6 +343,12 @@ class FilamentEvent(Event):
 
     payload: Filament = Field(description="Updated filament.")
     resource: Literal["filament"] = Field(description="Resource type.")
+
+class CoilEvent(Event):
+    """Event."""
+
+    payload: Coil = Field(description="Updated coil.")
+    resource: Literal["coil"] = Field(description="Resource type.")
 
 
 class VendorEvent(Event):

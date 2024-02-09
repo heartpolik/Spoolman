@@ -11,6 +11,21 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 class Base(AsyncAttrs, DeclarativeBase):
     pass
 
+class Coil(Base):
+    __tablename__ = "coil"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    registered: Mapped[datetime] = mapped_column()
+    name: Mapped[Optional[str]] = mapped_column(String(64))
+    vendor_id: Mapped[int] = mapped_column(ForeignKey("vendor.id"))
+    weight: Mapped[float] = mapped_column(comment="Empty coil weight")
+    comment: Mapped[Optional[str]] = mapped_column(String(1024))
+    vendor: Mapped[Optional["Vendor"]] = relationship(back_populates="coils")
+    extra: Mapped[list["CoilField"]] = relationship(
+        back_populates="coil",
+        cascade="save-update, merge, delete, delete-orphan",
+        lazy="joined",
+    )
 
 class Vendor(Base):
     __tablename__ = "vendor"
@@ -20,6 +35,7 @@ class Vendor(Base):
     name: Mapped[str] = mapped_column(String(64))
     comment: Mapped[Optional[str]] = mapped_column(String(1024))
     filaments: Mapped[list["Filament"]] = relationship(back_populates="vendor")
+    coils: Mapped[list["Coil"]] = relationship(back_populates="vendor")
     extra: Mapped[list["VendorField"]] = relationship(
         back_populates="vendor",
         cascade="save-update, merge, delete, delete-orphan",
@@ -107,5 +123,12 @@ class SpoolField(Base):
 
     spool_id: Mapped[int] = mapped_column(ForeignKey("spool.id"), primary_key=True, index=True)
     spool: Mapped["Spool"] = relationship(back_populates="extra")
+    key: Mapped[str] = mapped_column(String(64), primary_key=True, index=True)
+    value: Mapped[str] = mapped_column(Text())
+
+class CoilField(Base):
+    __tablename__ = "coil_field"
+    coil_id: Mapped[int] = mapped_column(ForeignKey("coil.id"), primary_key=True, index=True)
+    coil: Mapped["Coil"] = relationship(back_populates="extra")
     key: Mapped[str] = mapped_column(String(64), primary_key=True, index=True)
     value: Mapped[str] = mapped_column(Text())

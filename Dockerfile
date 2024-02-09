@@ -54,8 +54,8 @@ WORKDIR /home/app/spoolman
 ENV PATH="/home/app/spoolman/.venv/bin:${PATH}"
 ENV PYTHONPATH="/home/app/spoolman:${PYTHONPATH}"
 
-ARG GIT_COMMIT=unknown
-ARG BUILD_DATE=unknown
+ARG GIT_COMMIT=13
+ARG BUILD_DATE=08-02-2024
 ENV GIT_COMMIT=${GIT_COMMIT}
 ENV BUILD_DATE=${BUILD_DATE}
 
